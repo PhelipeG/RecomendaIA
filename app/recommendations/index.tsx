@@ -55,7 +55,7 @@ export default function RecommendationsScreen() {
     }
   };
 
-  const getRecommendations = async () => {
+  async function getRecommendations() {
     if (!query.trim()) return;
 
     setLoading(true);
@@ -104,7 +104,7 @@ export default function RecommendationsScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const renderMovie = ({ item }: { item: Movie }) => (
     <View style={styles.movieCard}>
