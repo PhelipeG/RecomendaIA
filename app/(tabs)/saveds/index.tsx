@@ -7,12 +7,14 @@ import {
   Alert,
   FlatList,
   Dimensions,
+  StatusBar,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { loadSearchMovies } from "@/src/storage/loadSearchMovies";
 import { useIsFocused } from "@react-navigation/native";
 import EmptyList from "@/src/components/EmptyList";
 import Loading from "@/src/components/Loading";
+import { removeSearchMovies } from "@/src/storage/removeSearchMovie";
 
 const screenWidth = Dimensions.get("window").width;
 const cardWidth = screenWidth * 0.85; // 85% da largura da tela
@@ -29,22 +31,39 @@ export default function Saveds() {
   const [loading, setLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
 
-  useEffect(() => {
-    async function fetchSavedItems() {
-      if (isFocused) {
-        try {
-          const items = await loadSearchMovies();
-          console.log(items);
-          setSavedItems(items);
-        } catch (error) {
-          Alert.alert("Erro", "Erro ao carregar os itens salvos.");
-        } finally {
-          setLoading(false);
-        }
-      }
+  const loadItems = useCallback(async () => {
+    try {
+      setLoading(true);
+      const items = await loadSearchMovies();
+      console.log("Itens carregados:", items);
+      setSavedItems(items);
+    } catch (error) {
+      console.error("Erro ao carregar itens:", error);
+      Alert.alert("Erro", "Erro ao carregar os itens salvos.");
+    } finally {
+      setLoading(false);
     }
-    fetchSavedItems();
-  }, [isFocused]);
+  }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      loadItems();
+    }
+  }, [isFocused, loadItems]);
+
+  // Função para remover itens que atualiza a lista após remoção
+  const handleRemoveItem = async (id: string) => {
+    try {
+      const updatedItems = await removeSearchMovies(id);
+      // Atualizar diretamente o estado com os itens retornados da função
+      setSavedItems(updatedItems);
+    } catch (error) {
+      console.error("Erro ao remover item:", error);
+      Alert.alert("Erro", "Não foi possível remover o item.");
+      // Recarregar em caso de erro
+      loadItems();
+    }
+  };
 
   // Renderiza um item da lista como card
   const renderItem = ({ item }: { item: SavedItem }) => (
@@ -78,21 +97,14 @@ export default function Saveds() {
                 },
                 {
                   text: "Marcar como Assistido",
-                  onPress: () => {
-                    // Implementar lógica de remoção
-                    const newItems = savedItems.filter(
-                      (savedItem) => savedItem.id !== item.id
-                    );
-                    setSavedItems(newItems);
-                    // Aqui você implementaria a atualização no AsyncStorage também
-                  },
+                  onPress: () => handleRemoveItem(item.id),
                   style: "destructive",
                 },
               ]
             );
           }}
         >
-          <Text style={styles.removeButtonText}>Remover</Text>
+          <Text style={styles.removeButtonText}>Marcar como Assistido</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -100,15 +112,21 @@ export default function Saveds() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Itens Salvos</Text>
+      <StatusBar backgroundColor="#ca1414" barStyle="light-content" />
+      <View style={styles.headerSaved}>
+        <View style={styles.dropEffect}></View>
+        <Text style={styles.headerText}>Meus Filmes Salvos</Text>
+      </View>
+
       {loading ? (
         <Loading />
       ) : (
         <FlatList
           data={savedItems}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id || item.title}
+          keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
+          extraData={savedItems.length} // Para forçar a atualização da lista
           ListEmptyComponent={EmptyList}
         />
       )}
@@ -121,19 +139,54 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
     alignItems: "center",
-    paddingHorizontal: 16,
+  },
+  headerSaved: {
+    width: "100%", // Reduzir a largura para permitir bordas arredondadas
+    height: 150, // Altura do cabeçalho
+    paddingVertical: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ca1414",
+    borderBottomLeftRadius: 35, // Mais arredondado embaixo à esquerda
+    borderBottomRightRadius: 35, // Mais arredondado embaixo à direita
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    // Efeito de gota
+    // transform: [{ scaleY: 0.95 }], // Leve achatamento vertical
+    borderWidth: 0,
+    borderColor: "#be1919",
+    position: "relative",
+    overflow: "hidden",
+    marginTop: 0, // Remover margem superior
+  },
+  dropEffect: {
+    position: "absolute",
+    width: "150%",
+    height: 80, // Aumentei altura do efeito
+    backgroundColor: "rgba(255, 255, 255, 0.08)", // Cor mais sutil
+    borderRadius: 100,
+    bottom: -40, // Posicionado na parte inferior
+    alignSelf: "center",
+    transform: [{ scaleX: 1.5 }], // Alongar horizontalmente
   },
   headerText: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 16,
-    marginTop: 50,
-    color: "#333",
+    color: "#ffffff",
+    // Remover margens porque agora usamos padding do container
+    marginBottom: 0,
+    marginTop: 10,
+    textShadowColor: "rgba(0, 0, 0, 0.1)",
+    textShadowOffset: { width: 1, height: 1 },
   },
   list: {
     paddingVertical: 12,
     alignItems: "center",
     paddingBottom: 24,
+    paddingHorizontal: 16,
   },
   cardContainer: {
     width: cardWidth,

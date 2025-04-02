@@ -28,7 +28,6 @@ export default function RecommendationsScreen() {
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [posterCache, setPosterCache] = useState<Record<string, string>>({});
-  // Referência para rastrear requisições canceladas
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const GEMINI_API_KEY = Constants.expoConfig?.extra?.GEMINI_API_KEY;
@@ -47,7 +46,6 @@ export default function RecommendationsScreen() {
     }
   }
 
-  // Função otimizada para buscar um único pôster
   async function fetchMoviePoster(
     movieTitle: string | number | boolean,
     year: string | number,
@@ -55,13 +53,11 @@ export default function RecommendationsScreen() {
   ) {
     const cacheKey = `${movieTitle}-${year}`;
 
-    // Check cache first
     if (posterCache[cacheKey]) {
       return posterCache[cacheKey];
     }
 
     try {
-      // Busca mais precisa com o ano
       const response = await fetch(
         `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(
           movieTitle
@@ -80,7 +76,6 @@ export default function RecommendationsScreen() {
           ? `${TMDB_IMAGE_BASE_URL}${data.results[0].poster_path}`
           : "https://via.placeholder.com/150x225?text=Sem+Imagem";
 
-        // Update cache
         setPosterCache((prev) => ({
           ...prev,
           [cacheKey]: posterUrl,
@@ -89,7 +84,6 @@ export default function RecommendationsScreen() {
         return posterUrl;
       }
 
-      // Fallback sem o ano para maior flexibilidade
       const fallbackResponse = await fetch(
         `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(
           movieTitle
@@ -104,7 +98,6 @@ export default function RecommendationsScreen() {
           ? `${TMDB_IMAGE_BASE_URL}${fallbackData.results[0].poster_path}`
           : "https://via.placeholder.com/150x225?text=Sem+Imagem";
 
-        // Update cache
         setPosterCache((prev) => ({
           ...prev,
           [cacheKey]: posterUrl,
@@ -115,7 +108,6 @@ export default function RecommendationsScreen() {
 
       return "https://via.placeholder.com/150x225?text=Sem+Imagem";
     } catch (error) {
-      // Ignorar erros de aborto, que são esperados quando cancelamos
       if ((error as Error).name === "AbortError") {
         console.log("Busca de pôster cancelada");
         return "https://via.placeholder.com/150x225?text=Cancelado";
@@ -126,46 +118,44 @@ export default function RecommendationsScreen() {
     }
   }
 
-  // Função para buscar pôsteres em lotes para melhor performance
-  async function fetchMoviePostersInBatches(movies: Movie[]) {
-    if (!movies.length) return [];
+  async function fetchMoviePostersInBatches(moviesWithIDs: Movie[]) {
+    if (!moviesWithIDs.length) return [];
 
-    // Criar um novo controlador para este conjunto de requisições
     abortControllerRef.current = new AbortController();
     const { signal } = abortControllerRef.current;
 
     setPosterLoading(true);
 
     try {
-      // Copiar array para não modificar o original diretamente
-      const moviePosters = [...movies];
-      const batchSize = 3; // Processar  filmes simultaneamente
+      const moviePosters = [...moviesWithIDs];
+      const batchSize = 3;
 
-      // Processar em lotes
-      for (let i = 0; i < movies.length; i += batchSize) {
+      for (let i = 0; i < moviesWithIDs.length; i += batchSize) {
         if (signal.aborted) break;
 
-        const batch = movies.slice(i, i + batchSize);
+        const batch = moviesWithIDs.slice(i, i + batchSize);
 
-        // Execução paralela dentro do lote
         const posterPromises = batch.map((movie, batchIndex) =>
           fetchMoviePoster(movie.title, movie.year, signal).then((poster) => ({
             index: i + batchIndex,
             poster,
+            id: movie.id,
           }))
         );
 
         const posterResults = await Promise.all(posterPromises);
 
-        // Atualizar os filmes com os pôsteres
-        posterResults.forEach(({ index, poster }) => {
+        posterResults.forEach(({ index, poster, id }) => {
           if (index < moviePosters.length) {
-            moviePosters[index] = { ...moviePosters[index], poster };
+            moviePosters[index] = {
+              ...moviePosters[index],
+              poster,
+            };
           }
         });
 
-        // Atualizar o estado para mostrar os pôsteres à medida que forem carregados
         if (!signal.aborted) {
+          console.log("Atualizando filmes com pôsteres:", moviePosters);
           setRecommendations([...moviePosters]);
         }
       }
@@ -173,7 +163,7 @@ export default function RecommendationsScreen() {
       return moviePosters;
     } catch (error) {
       console.error("Erro ao buscar pôsteres em lote:", error);
-      return movies;
+      return recommendations;
     } finally {
       setPosterLoading(false);
     }
@@ -182,7 +172,6 @@ export default function RecommendationsScreen() {
   const getRecommendations = useCallback(async () => {
     if (!query.trim()) return;
 
-    // Cancelar requisições pendentes
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -207,7 +196,6 @@ export default function RecommendationsScreen() {
         }
       ]`;
 
-      // Adicionar timeout para a IA
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
           () => reject(new Error("Tempo esgotado ao buscar recomendações")),
@@ -221,25 +209,22 @@ export default function RecommendationsScreen() {
       const response = result.response;
       const text = response.text();
 
-      // Extrair o JSON da resposta
       const jsonMatch = text.match(/\[.*\]/s);
       if (jsonMatch) {
         const jsonString = jsonMatch[0];
-        const moviesWithoutPosters = JSON.parse(jsonString);
+        const moviesData = JSON.parse(jsonString);
 
-        // Mostrar filmes imediatamente com placeholders
-        const moviesWithPlaceholders = moviesWithoutPosters.map(
-          (movie: Movie) => ({
-            ...movie,
-            poster: "https://via.placeholder.com/150x225?text=Carregando",
-          })
-        );
+        const moviesWithIDs = moviesData.map((movie: any) => ({
+          ...movie,
+          id: `movie-${Math.random().toString(36).substring(2, 15)}`,
+          poster: "https://via.placeholder.com/150x225?text=Carregando",
+        }));
 
-        setRecommendations(moviesWithPlaceholders);
+        setRecommendations(moviesWithIDs);
+        console.log("Filmes com IDs gerados:", moviesWithIDs);
         setLoading(false);
 
-        // Buscar pôsteres em lote
-        await fetchMoviePostersInBatches(moviesWithoutPosters);
+        await fetchMoviePostersInBatches(moviesWithIDs);
       } else {
         throw new Error("Formato de resposta inválido");
       }
