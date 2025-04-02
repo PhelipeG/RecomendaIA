@@ -1,16 +1,20 @@
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import { StatusBar } from "react-native";
 
 export default function RootLayout() {
   return (
     <>
-      <StatusBar style="auto" />
+      <StatusBar barStyle="dark-content" />
       <Stack
         screenOptions={{
           headerShown: false,
+          gestureEnabled: true,
+          gestureDirection: "horizontal",
+          animation: "slide_from_bottom",
         }}
       >
-        <Stack.Screen name="/recommendations" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="/trailerMovie" />
       </Stack>
     </>
   );

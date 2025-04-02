@@ -1,50 +1,34 @@
-# Welcome to your Expo app 👋
+# Recomenda-IA
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Funcionalidades Principais
 
-## Get started
+- [x] **Recomendação por IA**: Utiliza a API Gemini para gerar recomendações personalizadas de filmes
+- [x] **Busca visual**: Interface amigável para inserir critérios de busca
+- [x] **Exibição de posters**: Integração com a API TMDB para exibir imagens dos filmes
+- [x] **Visualização de trailers**: Botão para assistir trailers dos filmes recomendados
+- [x] **Layout responsivo**: Design que se adapta a diferentes tamanhos de tela
+- [ ] **Cache de recomendações**: Salvar recomendações anteriores para acesso offline
+- [ ] **Histórico de buscas**: Armazenar termos pesquisados pelo usuário
 
-1. Install dependencies
+## Bugs Conhecidos
 
-   ```bash
-   npm install
-   ```
+- [ ] **Bug #1**: Uso de memoria meio alto
 
-2. Start the app
+## Melhorias Planejadas
 
-   ```bash
-    npx expo start
-   ```
+- [x] **Otimização de performance**: Reduzir tempo de carregamento das recomendações (Parcialmente)
+- [ ] **Modo escuro**: Implementação de tema escuro para a interface
+- [x] **Animações de transição**: Melhorar a experiência do usuário com animações
+- [ ] **Compartilhamento**: Opção para compartilhar recomendações nas redes sociais
+- [x] **Aumentar Prompt Resultados** : Aumentar de 6 resultados para 10
 
-In the output, you'll find options to open the app in a
+## Questões Técnicas
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [ ] **Testes automatizados**: Adicionar testes unitários e de integração
+- [x] **Melhorar tratamento de erros**: Implementar sistema robusto de tratamento de erros
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Prioridades
 
-## Get a fresh project
+---
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Data da última atualização**: 21 de março de 2025
