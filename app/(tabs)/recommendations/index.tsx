@@ -17,6 +17,7 @@ import Loading from "../../../src/components/Loading";
 import Constants from "expo-constants";
 import Moviecard from "@/src/components/MovieCard";
 import { saveSearchMovies } from "@/src/storage/saveSearchFilm";
+import Header from "@/src/components/Header";
 
 const screenWidth = Dimensions.get("screen").width;
 
@@ -35,6 +36,13 @@ export default function RecommendationsScreen() {
   const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
   async function saveMovieToList() {
+    if (recommendations.length === 0) {
+      Alert.alert(
+        "Erro",
+        "Nenhum filme encontrado para salvar ou lista vazia."
+      );
+      return;
+    }
     setIsSaving(true);
     try {
       await saveSearchMovies(recommendations);
@@ -238,9 +246,8 @@ export default function RecommendationsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
-      <Text style={styles.header}>Recomenda IA</Text>
-
+      <StatusBar backgroundColor="#c1071e" barStyle="light-content" />
+      <Header title="Recomendações" />
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -295,8 +302,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000000",
-    padding: 20,
-    paddingTop: 40,
+    alignItems: "center",
   },
   header: {
     fontSize: 28,
@@ -308,18 +314,22 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "column",
     alignItems: "center",
-    marginBottom: 20,
+    marginTop: -30,
   },
   input: {
-    height: 50,
+    height: 60,
     width: screenWidth - 40,
-    marginRight: 10,
-    borderWidth: 2,
     borderRadius: 8,
     paddingHorizontal: 15,
     backgroundColor: "#fff",
     color: "#000",
     fontSize: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    textAlign: "center",
   },
   buttonContainer: {
     flexDirection: "row",
@@ -342,12 +352,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#7a1821",
   },
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontWeight: "bold",
     fontSize: 16,
   },
   buttonSaveList: {
-    backgroundColor: "#4bf617",
+    backgroundColor: "#65B4DC",
     height: 50,
     width: (screenWidth - 50) / 2,
     justifyContent: "center",

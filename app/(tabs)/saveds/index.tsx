@@ -15,6 +15,7 @@ import { useIsFocused } from "@react-navigation/native";
 import EmptyList from "@/src/components/EmptyList";
 import Loading from "@/src/components/Loading";
 import { removeSearchMovies } from "@/src/storage/removeSearchMovie";
+import Header from "@/src/components/Header";
 
 const screenWidth = Dimensions.get("window").width;
 const cardWidth = screenWidth * 0.85; // 85% da largura da tela
@@ -112,12 +113,8 @@ export default function Saveds() {
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#ca1414" barStyle="light-content" />
-      <View style={styles.headerSaved}>
-        <View style={styles.dropEffect}></View>
-        <Text style={styles.headerText}>Meus Filmes Salvos</Text>
-      </View>
-
+      <StatusBar backgroundColor="#c1071e" barStyle="light-content" />
+      <Header title="Meus Salvos" />
       {loading ? (
         <Loading />
       ) : (
@@ -139,48 +136,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
     alignItems: "center",
-  },
-  headerSaved: {
-    width: "100%", // Reduzir a largura para permitir bordas arredondadas
-    height: 150, // Altura do cabeçalho
-    paddingVertical: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#ca1414",
-    borderBottomLeftRadius: 35, // Mais arredondado embaixo à esquerda
-    borderBottomRightRadius: 35, // Mais arredondado embaixo à direita
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    // Efeito de gota
-    // transform: [{ scaleY: 0.95 }], // Leve achatamento vertical
-    borderWidth: 0,
-    borderColor: "#be1919",
-    position: "relative",
-    overflow: "hidden",
-    marginTop: 0, // Remover margem superior
-  },
-  dropEffect: {
-    position: "absolute",
-    width: "150%",
-    height: 80, // Aumentei altura do efeito
-    backgroundColor: "rgba(255, 255, 255, 0.08)", // Cor mais sutil
-    borderRadius: 100,
-    bottom: -40, // Posicionado na parte inferior
-    alignSelf: "center",
-    transform: [{ scaleX: 1.5 }], // Alongar horizontalmente
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#ffffff",
-    // Remover margens porque agora usamos padding do container
-    marginBottom: 0,
-    marginTop: 10,
-    textShadowColor: "rgba(0, 0, 0, 0.1)",
-    textShadowOffset: { width: 1, height: 1 },
   },
   list: {
     paddingVertical: 12,

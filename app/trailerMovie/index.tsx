@@ -1,3 +1,4 @@
+import Header from "@/src/components/Header";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -80,12 +81,8 @@ export default function TrailerMovie() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Trailer do Filme : {title}</Text>
-      </View>
-
+      <StatusBar backgroundColor="#c1071e" barStyle="light-content" />
+      <Header title={title} />
       <View style={styles.videoContainer}>
         {renderVideoPlayer()}
         {loading && (
@@ -136,13 +133,18 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     height: 240,
+    marginTop: -40,
     marginVertical: 20,
     marginHorizontal: 10,
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#000",
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -157,6 +159,7 @@ const styles = StyleSheet.create({
   webView: {
     flex: 1,
     backgroundColor: "#000",
+    borderRadius: 8,
   },
   inputContainer: {
     flexDirection: "row",

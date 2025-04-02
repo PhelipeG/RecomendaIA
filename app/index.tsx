@@ -11,6 +11,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   SafeAreaView,
+  StatusBar,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -149,69 +150,75 @@ export default function App() {
   };
 
   return (
-    <LinearGradient colors={["#020202", "#0b0a0a"]} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <FlatList
-          ref={flatListRef}
-          data={onboardingData}
-          renderItem={renderOnboardingItem}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled={true}
-          onMomentumScrollEnd={handleScroll}
-          decelerationRate={"fast"}
-          getItemLayout={(_, index) => ({
-            length: SCREEN_WIDTH,
-            offset: SCREEN_WIDTH * index,
-            index,
-          })}
-        />
+    <>
+      <StatusBar backgroundColor="#000000" barStyle="light-content" />
+      <LinearGradient colors={["#020202", "#0b0a0a"]} style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <FlatList
+            ref={flatListRef}
+            data={onboardingData}
+            renderItem={renderOnboardingItem}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEnabled={true}
+            onMomentumScrollEnd={handleScroll}
+            decelerationRate={"fast"}
+            getItemLayout={(_, index) => ({
+              length: SCREEN_WIDTH,
+              offset: SCREEN_WIDTH * index,
+              index,
+            })}
+          />
 
-        <View style={styles.controlContainer}>
-          <View style={styles.dotsContainer}>
-            {onboardingData.map((_, index) => (
-              <View
-                key={index}
+          <View style={styles.controlContainer}>
+            <View style={styles.dotsContainer}>
+              {onboardingData.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    {
+                      backgroundColor:
+                        index === currentIndex ? "#e22d36" : "#ffffff",
+                      width: index === currentIndex ? 26 : 10,
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+
+            <View style={styles.buttonContainer}>
+              {currentIndex > 0 && (
+                <TouchableOpacity
+                  style={styles.prevButton}
+                  onPress={handlePrev}
+                >
+                  <Text style={styles.prevButtonText}>Anterior</Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
                 style={[
-                  styles.dot,
-                  {
-                    backgroundColor:
-                      index === currentIndex ? "#e22d36" : "#ffffff",
-                    width: index === currentIndex ? 26 : 10,
-                  },
+                  styles.nextButton,
+                  currentIndex === onboardingData.length - 1
+                    ? styles.startButton
+                    : {},
                 ]}
-              />
-            ))}
-          </View>
-
-          <View style={styles.buttonContainer}>
-            {currentIndex > 0 && (
-              <TouchableOpacity style={styles.prevButton} onPress={handlePrev}>
-                <Text style={styles.prevButtonText}>Anterior</Text>
+                onPress={handleNext}
+              >
+                <Text style={styles.nextButtonText}>
+                  {currentIndex === onboardingData.length - 1
+                    ? "Começar"
+                    : "Próximo"}
+                </Text>
               </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={[
-                styles.nextButton,
-                currentIndex === onboardingData.length - 1
-                  ? styles.startButton
-                  : {},
-              ]}
-              onPress={handleNext}
-            >
-              <Text style={styles.nextButtonText}>
-                {currentIndex === onboardingData.length - 1
-                  ? "Começar"
-                  : "Próximo"}
-              </Text>
-            </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
-    </LinearGradient>
+        </SafeAreaView>
+      </LinearGradient>
+    </>
   );
 }
 
