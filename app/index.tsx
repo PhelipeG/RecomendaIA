@@ -20,7 +20,6 @@ import Animated, {
   Extrapolation,
   withTiming,
 } from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -84,22 +83,23 @@ export default function App() {
   const onboardingData: OnboardingItem[] = [
     {
       id: 1,
-      title: "Bem-vindo ao Recomenda IA",
-      description: "Cansado de procurar filmes para assistir? Nós te ajudamos!",
+      title: "Descubra o Futuro do Entretenimento",
+      description:
+        "Chega de perder horas procurando o que assistir! O Recomenda IA é seu novo assistente pessoal de filmes e séries.",
       image: require("../app/assets/onboardScreenImages/time-movie.png"),
     },
     {
       id: 2,
-      title: "Explore",
+      title: "Recomendações Inteligentes",
       description:
-        "Receba recomendações personalizadas de filmes e séries para assistir ,utilizando a inteligência artificial",
+        "Nosso sistema de IA analisa os melhores títulos premiados e populares para sugerir exatamente o que você vai adorar assistir.",
       image: require("../app/assets/onboardScreenImages/movie.png"),
     },
     {
       id: 3,
-      title: "Começar a Diversao !",
+      title: "Sua Próxima Maratona Está Aqui!",
       description:
-        "Vamos começar a diversão! Clique em começar para começar a receber recomendações",
+        "Encontre trailers, informações e os melhores filmes e séries do momento com apenas alguns toques. Vamos começar?",
       image: require("../app/assets/onboardScreenImages/diversao-logo.png"),
     },
   ];
@@ -152,7 +152,7 @@ export default function App() {
   return (
     <>
       <StatusBar backgroundColor="#000000" barStyle="light-content" />
-      <LinearGradient colors={["#020202", "#0b0a0a"]} style={styles.container}>
+      <View style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           <FlatList
             ref={flatListRef}
@@ -181,14 +181,14 @@ export default function App() {
                     styles.dot,
                     {
                       backgroundColor:
-                        index === currentIndex ? "#e22d36" : "#ffffff",
+                        index === currentIndex ? "#e22d36" : "#000",
                       width: index === currentIndex ? 26 : 10,
                     },
                   ]}
                 />
               ))}
             </View>
-
+            {/* botoes  */}
             <View style={styles.buttonContainer}>
               {currentIndex > 0 && (
                 <TouchableOpacity
@@ -217,7 +217,7 @@ export default function App() {
             </View>
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     </>
   );
 }
@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
+    backgroundColor: "#ffffff",
   },
   safeArea: {
     flex: 1,
@@ -235,8 +236,7 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingTop: 50,
+    marginBottom: 100,
   },
   illustration: {
     width: SCREEN_WIDTH * 0.8,
@@ -247,13 +247,14 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 15,
-    color: "#ffffff",
+    color: "#000000",
     textAlign: "center",
   },
   descriptionText: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: "center",
-    color: "#ffffff",
+    marginBottom: 20,
+    color: "#000000",
     paddingHorizontal: 20,
   },
   controlContainer: {
@@ -291,11 +292,11 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   startButton: {
-    backgroundColor: "#e22d36",
+    backgroundColor: "#",
     paddingHorizontal: 40,
   },
   prevButton: {
-    backgroundColor: "transparent",
+    backgroundColor: "#151313",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,

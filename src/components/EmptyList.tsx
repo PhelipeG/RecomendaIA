@@ -1,10 +1,15 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 
 export default function EmptyList() {
   return (
     <View style={styles.emptyContainer}>
-      <Feather name="x" size={80} color="red" />
+      <Image
+        source={require("../../app/assets/empty.png")}
+        alt="Imagem de uma tela vazia com um ícone de filme"
+        resizeMode="contain"
+        style={{ width: 150, height: 150 }}
+      />
       <Text style={styles.emptyText}>
         Você ainda não salvou nenhum filme ou série.
       </Text>

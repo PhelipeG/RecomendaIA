@@ -43,6 +43,12 @@ export default function MovieCards({ data }: MovieCardsProps) {
       item.poster.includes("Erro") ||
       item.poster.includes("Cancelado");
 
+    // Truncar a descrição se for muito longa
+    const truncatedDescription =
+      item.description.length > 150
+        ? item.description.substring(0, 150) + "..."
+        : item.description;
+
     // Cálculo de animação para escala e opacidade
     const inputRange = [
       (index - 1) * CARD_WIDTH,
@@ -71,7 +77,6 @@ export default function MovieCards({ data }: MovieCardsProps) {
             // Fallback para quando a imagem não carregar
             <View style={styles.fallbackPoster}>
               <Text style={styles.fallbackIcon}>{item.title.charAt(0)}</Text>
-              <Text style={styles.fallbackText}>Sem Imagem</Text>
             </View>
           ) : (
             <Image
@@ -84,15 +89,19 @@ export default function MovieCards({ data }: MovieCardsProps) {
             />
           )}
           <View style={styles.movieInfo}>
-            <Text style={styles.title}>
+            <Text style={styles.title} numberOfLines={1}>
               {item.title} ({item.year})
             </Text>
-            <Text style={styles.description}>{item.description}</Text>
+            <Text style={styles.description} numberOfLines={4}>
+              {truncatedDescription}
+            </Text>
+          </View>
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.trailerButton}
               onPress={() => handleTrailerPress(item)}
             >
-              <Text style={styles.trailerButtonText}>Ver trailer</Text>
+              <Text style={styles.buttonText}>Ver trailer</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -109,10 +118,8 @@ export default function MovieCards({ data }: MovieCardsProps) {
         horizontal
         showsHorizontalScrollIndicator={false}
         decelerationRate={0.8}
-        // Usar o mesmo valor para snapToInterval e espaçamento
         snapToInterval={CARD_WIDTH}
         bounces={false}
-        // Ajuste correto do contentContainerStyle
         contentContainerStyle={styles.flatListContent}
         snapToAlignment="center"
         onScroll={Animated.event(
@@ -120,8 +127,6 @@ export default function MovieCards({ data }: MovieCardsProps) {
           { useNativeDriver: true }
         )}
         scrollEventThrottle={16}
-        // Remover contentInset que pode causar problemas em algumas versões do React Native
-        // contentInset={{ left: 20, right: 20 }}
         contentInsetAdjustmentBehavior="automatic"
         getItemLayout={(data, index) => ({
           length: CARD_WIDTH,
@@ -131,7 +136,7 @@ export default function MovieCards({ data }: MovieCardsProps) {
       />
 
       {/* Indicadores de página */}
-      <View style={styles.indicatorContainer}>
+      <View style={[styles.indicatorContainer, { marginBottom: 140 }]}>
         {data.map((_, index) => {
           const inputRange = [
             (index - 1) * CARD_WIDTH,
@@ -168,17 +173,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   flatListContent: {
-    // Fórmula corrigida para centralizar os cards
     paddingHorizontal: (widthScreen - CARD_WIDTH) / 2,
   },
   cardContainer: {
-    // Usar a mesma largura definida na constante
     width: CARD_WIDTH,
+    height: 350, // Altura fixa menor para os cards
     alignItems: "center",
     justifyContent: "center",
   },
   movieCard: {
     width: "100%",
+    height: "100%",
     backgroundColor: "#111",
     borderRadius: 12,
     overflow: "hidden",
@@ -188,17 +193,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 5,
     elevation: 5,
+    marginTop: 20,
   },
   poster: {
     width: "100%",
-    height: 200,
+    height: 160, // Altura fixa menor para o poster
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
-  // Estilo para o fallback quando a imagem não carrega
   fallbackPoster: {
     width: "100%",
-    height: 200,
+    height: 160, // Mesma altura do poster
     backgroundColor: "#1a1a1a",
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
@@ -210,39 +215,39 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#E22D36",
   },
-  fallbackText: {
-    fontSize: 14,
-    color: "#999",
-    marginTop: 8,
-  },
   movieInfo: {
-    padding: 16,
+    padding: 12,
+    flex: 1, // Permite que a seção de informações ocupe o espaço entre o poster e o botão
+  },
+  buttonContainer: {
+    padding: 12,
+    paddingTop: 0,
+    width: "100%",
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#FFF",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#DDD",
-    marginBottom: 12,
+    flex: 1,
   },
   trailerButton: {
-    backgroundColor: "#e50914", // Cor estilo Netflix
-    paddingVertical: 10,
+    backgroundColor: "#e50914",
+    paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 6,
     alignSelf: "center",
-    marginTop: 4,
     width: "100%",
+    alignItems: "center", // Centraliza o texto no botão
   },
-  trailerButtonText: {
-    color: "#fff",
-    fontSize: 14,
+  buttonText: {
+    color: "#FFF",
     fontWeight: "bold",
-    textAlign: "center",
+    fontSize: 14,
   },
   indicatorContainer: {
     flexDirection: "row",
@@ -252,7 +257,7 @@ const styles = StyleSheet.create({
   },
   indicator: {
     height: 8,
-    width: 8, // Defina uma largura base
+    width: 8,
     borderRadius: 4,
     backgroundColor: "#e50914",
     marginHorizontal: 4,

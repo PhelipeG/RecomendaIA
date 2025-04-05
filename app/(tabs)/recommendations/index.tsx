@@ -194,15 +194,20 @@ export default function RecommendationsScreen() {
         model: "gemini-2.0-flash",
       });
 
-      const prompt = `Recomende 8 filmes baseados no seguinte critério: ${query} e que sejam dos anos recentes.
-      Retorne apenas um JSON no formato:
-      [
-        {
-          "title": "Nome do Filme",
-          "year": "Ano",
-          "description": "Breve descrição"
-        }
-      ]`;
+      const prompt = `Recomende 12 filmes ou séries baseados no seguinte critério: ${query}.
+Priorize conteúdo dos últimos 5 anos que seja bem avaliado (nota acima de 7.5/10 no TMDB, acima de 75% no Rotten Tomatoes ou avaliações equivalentes em outros sites conceituados de crítica).
+Inclua diversos gêneros dentro da temática solicitada, priorizando produções bem recebidas tanto pela crítica quanto pelo público.
+Dê preferência para títulos disponíveis em grandes plataformas de streaming.
+
+Retorne apenas um JSON no formato:
+[
+  {
+    "title": "Nome do Filme ou Série",
+    "year": "Ano de lançamento",
+    "description": "Breve descrição incluindo pontos fortes e por que se encaixa na recomendação solicitada. Mencione a nota média (TMDB, Rotten Tomatoes ou similar) se disponível.",
+    "type": "Filme" ou "Série"
+  }
+]`;
 
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
@@ -251,7 +256,7 @@ export default function RecommendationsScreen() {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Ex:filmes de ação dos anos 90"
+          placeholder="Pesquise por filmes ou séries..."
           placeholderTextColor="#999"
           value={query}
           onChangeText={setQuery}
@@ -286,13 +291,6 @@ export default function RecommendationsScreen() {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      {posterLoading && recommendations.length > 0 && (
-        <View style={styles.posterLoadingContainer}>
-          <ActivityIndicator size="small" color="#E22D36" />
-          <Text style={styles.posterLoadingText}>Carregando imagens...</Text>
-        </View>
-      )}
-
       {loading ? <Loading /> : <Moviecard data={recommendations} />}
     </SafeAreaView>
   );
@@ -301,25 +299,20 @@ export default function RecommendationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: "#fff",
     alignItems: "center",
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#E22D36",
   },
   inputContainer: {
     flexDirection: "column",
     alignItems: "center",
-    marginTop: -30,
+    marginTop: -40,
   },
   input: {
     height: 60,
-    width: screenWidth - 40,
-    borderRadius: 8,
+    width: screenWidth - 35,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E22D36",
     paddingHorizontal: 15,
     backgroundColor: "#fff",
     color: "#000",
@@ -357,7 +350,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   buttonSaveList: {
-    backgroundColor: "#65B4DC",
+    backgroundColor: "#0b6ea3",
     height: 50,
     width: (screenWidth - 50) / 2,
     justifyContent: "center",
@@ -374,7 +367,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 5,
+    marginTop: 10,
+    marginBottom: 10,
   },
   posterLoadingText: {
     color: "#999",

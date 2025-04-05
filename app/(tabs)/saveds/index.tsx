@@ -5,7 +5,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-  FlatList,
+  ScrollView,
   Dimensions,
   StatusBar,
 } from "react-native";
@@ -16,31 +16,35 @@ import EmptyList from "@/src/components/EmptyList";
 import Loading from "@/src/components/Loading";
 import { removeSearchMovies } from "@/src/storage/removeSearchMovie";
 import Header from "@/src/components/Header";
+import { useRouter } from "expo-router";
+import { Movie } from "@/src/dtos/MovieDto";
 
 const screenWidth = Dimensions.get("window").width;
 const cardWidth = screenWidth * 0.85; // 85% da largura da tela
 
-interface SavedItem {
+// Interface para representar uma lista salva completa
+interface SavedMovieList {
   id: string;
+  date: string;
   title: string;
-  description?: string;
-  poster?: string;
+  movies: Movie[];
 }
 
 export default function Saveds() {
+  const router = useRouter();
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(true);
-  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [savedLists, setSavedLists] = useState<SavedMovieList[]>([]);
 
   const loadItems = useCallback(async () => {
     try {
       setLoading(true);
-      const items = await loadSearchMovies();
-      console.log("Itens carregados:", items);
-      setSavedItems(items);
+      const lists = await loadSearchMovies();
+      console.log("Listas carregadas:", lists);
+      setSavedLists(lists);
     } catch (error) {
-      console.error("Erro ao carregar itens:", error);
-      Alert.alert("Erro", "Erro ao carregar os itens salvos.");
+      console.error("Erro ao carregar listas:", error);
+      Alert.alert("Erro", "Erro ao carregar as listas salvas.");
     } finally {
       setLoading(false);
     }
@@ -52,80 +56,122 @@ export default function Saveds() {
     }
   }, [isFocused, loadItems]);
 
-  // Função para remover itens que atualiza a lista após remoção
-  const handleRemoveItem = async (id: string) => {
+  // Função para remover uma lista completa
+  const handleRemoveList = async (id: string) => {
     try {
-      const updatedItems = await removeSearchMovies(id);
-      // Atualizar diretamente o estado com os itens retornados da função
-      setSavedItems(updatedItems);
+      await removeSearchMovies(id);
+      // Atualiza o estado filtrando a lista removida localmente
+      setSavedLists((currentLists) =>
+        currentLists.filter((list) => list.id !== id)
+      );
     } catch (error) {
-      console.error("Erro ao remover item:", error);
-      Alert.alert("Erro", "Não foi possível remover o item.");
-      // Recarregar em caso de erro
+      console.error("Erro ao remover lista:", error);
+      Alert.alert("Erro", "Não foi possível remover a lista.");
       loadItems();
     }
   };
 
-  // Renderiza um item da lista como card
-  const renderItem = ({ item }: { item: SavedItem }) => (
-    <View style={styles.cardContainer}>
-      <View style={styles.cardContent}>
-        <View style={styles.placeholderImage}>
-          <Text style={styles.placeholderText}>
-            {item.title.substring(0, 6)}
-          </Text>
-        </View>
-        <View style={styles.cardDetails}>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          {item.description && (
-            <Text numberOfLines={3} style={styles.cardDescription}>
-              {item.description}
-            </Text>
-          )}
-        </View>
+  // Navegar para a tela de detalhes da lista quando clicar
+  const handleListPress = (list: SavedMovieList) => {
+    router.push({
+      pathname: "/listDetails",
+      params: {
+        listId: list.id,
+        title: list.title,
+      },
+    });
+  };
 
+  // Renderiza uma lista salva como card
+  const renderCard = (item: SavedMovieList) => {
+    // Pegamos a primeira imagem da lista para usar como miniatura
+    const thumbnailPoster =
+      item.movies && item.movies.length > 0 && item.movies[0].poster
+        ? item.movies[0].poster
+        : null;
+
+    // Total de filmes na lista
+    const moviesCount = item.movies?.length || 0;
+
+    // Formata a data para exibição
+    const listDate = new Date(item.date).toLocaleDateString("pt-BR");
+
+    return (
+      <View style={styles.cardContainer} key={item.id}>
         <TouchableOpacity
-          style={styles.removeButton}
-          onPress={() => {
-            // Implementar função para remover item aqui
-            Alert.alert(
-              "Marcar como Assistido",
-              `Deseja marcar como assistido o "${item.title}" da sua lista?`,
-              [
-                {
-                  text: "Cancelar",
-                  style: "cancel",
-                },
-                {
-                  text: "Marcar como Assistido",
-                  onPress: () => handleRemoveItem(item.id),
-                  style: "destructive",
-                },
-              ]
-            );
-          }}
+          style={styles.cardContent}
+          onPress={() => handleListPress(item)}
         >
-          <Text style={styles.removeButtonText}>Marcar como Assistido</Text>
+          {thumbnailPoster ? (
+            <Image
+              source={{ uri: thumbnailPoster }}
+              style={styles.cardImage}
+              defaultSource={{
+                uri: "https://via.placeholder.com/150x225?text=Carregando",
+              }}
+            />
+          ) : (
+            <View style={styles.placeholderImage}>
+              <Text style={styles.placeholderText}>{item.title.charAt(0)}</Text>
+            </View>
+          )}
+
+          <View style={styles.cardDetails}>
+            <Text style={styles.cardTitle}>{item.title}</Text>
+            <Text style={styles.cardDescription}>
+              {moviesCount} {moviesCount === 1 ? "filme" : "filmes"} • Salvo em{" "}
+              {listDate}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.removeButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              Alert.alert(
+                "Remover Lista",
+                `Deseja remover a lista "${item.title}"?`,
+                [
+                  {
+                    text: "Cancelar",
+                    style: "cancel",
+                  },
+                  {
+                    text: "Remover",
+                    onPress: () => handleRemoveList(item.id),
+                    style: "destructive",
+                  },
+                ]
+              );
+            }}
+          >
+            <Text style={styles.removeButtonText}>Remover Lista</Text>
+          </TouchableOpacity>
         </TouchableOpacity>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#c1071e" barStyle="light-content" />
-      <Header title="Meus Salvos" />
+      <Header title="Minhas Listas" />
+
       {loading ? (
         <Loading />
+      ) : savedLists.length === 0 ? (
+        <EmptyList />
       ) : (
-        <FlatList
-          data={savedItems}
-          renderItem={renderItem}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.list}
-          extraData={savedItems.length} // Para forçar a atualização da lista
-          ListEmptyComponent={EmptyList}
-        />
+        <ScrollView
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollViewContent}
+          decelerationRate="fast"
+          snapToInterval={cardWidth + 5}
+          snapToAlignment="center"
+        >
+          {savedLists.map(renderCard)}
+        </ScrollView>
       )}
     </View>
   );
@@ -135,17 +181,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    alignItems: "center",
   },
-  list: {
-    paddingVertical: 12,
+  scrollViewContent: {
+    paddingVertical: 20,
+    paddingHorizontal: 10,
     alignItems: "center",
-    paddingBottom: 24,
-    paddingHorizontal: 16,
+    gap: 10,
   },
   cardContainer: {
-    width: cardWidth,
-    marginBottom: 16,
+    width: cardWidth - 20,
+    marginHorizontal: 8,
+    height: 350,
     borderRadius: 12,
     backgroundColor: "#fff",
     shadowColor: "#000",
@@ -153,21 +199,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    alignSelf: "center",
   },
   cardContent: {
     padding: 16,
-    alignItems: "center", // Centralizar conteúdo
+    alignItems: "center",
   },
   cardImage: {
-    width: cardWidth * 0.8,
-    height: 180,
+    width: cardWidth * 0.5,
+    height: 200,
     borderRadius: 8,
-    marginBottom: 12,
     resizeMode: "cover",
   },
   placeholderImage: {
-    width: cardWidth * 0.8,
+    width: cardWidth * 0.5,
     height: 180,
     borderRadius: 8,
     backgroundColor: "#e0e0e0",
@@ -186,7 +230,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#333",
     textAlign: "center",
@@ -196,7 +240,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     textAlign: "center",
-    lineHeight: 20,
   },
   removeButton: {
     backgroundColor: "#ff3b30",
@@ -206,11 +249,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "80%",
-    marginTop: 8,
+    marginTop: 12,
   },
   removeButtonText: {
     color: "white",
     fontSize: 14,
     fontWeight: "500",
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#E22D36",
+    marginHorizontal: 4,
   },
 });

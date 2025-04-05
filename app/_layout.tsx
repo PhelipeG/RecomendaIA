@@ -15,6 +15,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="/trailerMovie" />
+        <Stack.Screen name="/listDetails" />
       </Stack>
     </>
   );
